@@ -20,11 +20,10 @@ from course_discovery.apps.publisher.models import (
     Course, CourseUserRole, OrganizationExtension, OrganizationUserRole, Seat
 )
 from course_discovery.apps.publisher.tests import factories
-from course_discovery.apps.publisher.tests.utils import MockedStartEndDateTestCase
 
 
 @ddt.ddt
-class CourseRunTests(MockedStartEndDateTestCase):
+class CourseRunTests():
     @classmethod
     def setUpClass(cls):
         super(CourseRunTests, cls).setUpClass()
