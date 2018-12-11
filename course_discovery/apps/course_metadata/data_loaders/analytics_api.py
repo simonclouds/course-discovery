@@ -1,25 +1,8 @@
-import abc
-import concurrent.futures
-import datetime
 import logging
-import re
-from urllib.parse import parse_qs, urlencode, urlparse
-from uuid import UUID
-
-import pytz
-from dateutil import rrule
 from django.utils.functional import cached_property
-from opaque_keys import InvalidKeyError
-from opaque_keys.edx.keys import CourseKey
 
 from analyticsclient.client import Client
-from course_discovery.apps.course_metadata.choices import CourseRunPacing, CourseRunStatus
 from course_discovery.apps.course_metadata.data_loaders import AbstractDataLoader
-from course_discovery.apps.course_metadata.models import (
-    AdditionalPromoArea, Course, CourseRun, LevelType, Organization, Person, PersonSocialNetwork, Subject
-)
-from course_discovery.apps.course_metadata.utils import MarketingSiteAPIClient
-from course_discovery.apps.ietf_language_tags.models import LanguageTag
 
 logger = logging.getLogger(__name__)
 
