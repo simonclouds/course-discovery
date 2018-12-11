@@ -20,6 +20,7 @@ from course_discovery.apps.course_metadata.data_loaders.marketing_site import (
     CourseMarketingSiteDataLoader, PersonMarketingSiteDataLoader, SchoolMarketingSiteDataLoader,
     SponsorMarketingSiteDataLoader, SubjectMarketingSiteDataLoader
 )
+from course_discovery.apps.course_metadata.data_loaders.analytics_api import AnalyticsAPIDataLoader
 from course_discovery.apps.course_metadata.models import Course, DataLoaderConfig
 
 logger = logging.getLogger(__name__)
@@ -135,6 +136,8 @@ class Command(BaseCommand):
             logger.info(
                 'Command is{negation} using threads to write data.'.format(negation='' if is_threadsafe else ' not')
             )
+            logger.info(partner.courses_api_url)
+            logger.info(partner.analytics_url)
 
             pipeline = (
                 (
@@ -149,6 +152,7 @@ class Command(BaseCommand):
                 ),
                 (
                     (CoursesApiDataLoader, partner.courses_api_url, max_workers),
+                    (AnalyticsAPIDataLoader, partner.analytics_url, max_workers),
                 ),
                 (
                     (EcommerceApiDataLoader, partner.ecommerce_api_url, 1),
