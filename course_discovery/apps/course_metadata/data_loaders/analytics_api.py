@@ -3,6 +3,9 @@ from django.utils.functional import cached_property
 
 from analyticsclient.client import Client
 from course_discovery.apps.course_metadata.data_loaders import AbstractDataLoader
+from course_discovery.apps.course_metadata.models import (
+    Course, CourseRun, Program
+)
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +50,7 @@ class AnalyticsAPIDataLoader(AbstractDataLoader):
         # self._process_response(course_summaries_response)
         course_run_summaries = course_summaries_response.course_summaries(fields=['course_id', 'count'])
         import pprint
-        logger.info(pprint.pformat(course_run_summaries))
+        # logger.info(pprint.pformat(course_run_summaries))
 
         # logger.info(course_run_summaries)
         logger.info("Test complete!")
@@ -55,9 +58,10 @@ class AnalyticsAPIDataLoader(AbstractDataLoader):
         for course_run_summary in course_run_summaries:
             # Add one to avoid requesting the first page again and to make sure
             # we get the last page when range() is used below.
-            logger.info(course_run_summary)
+            # logger.info(course_run_summary)
+            self._process_course_run_summary(course_run_summary=course_run_summary)
 
-        for course, count in self.course_dictionary:
+        for course, count in self.course_dictionary.items():
             # update course count
             # get programs for course
             # add course total to program total
@@ -70,9 +74,35 @@ class AnalyticsAPIDataLoader(AbstractDataLoader):
             logger.info(count)
 
     def _process_course_run_summary(self, course_run_summary):
+        # logger.info("Course run summary:")
+        # logger.info(course_run_summary)
         # get course run from course key
+        course_run = None
+        course_run_key = course_run_summary['course_id']
+        course_run_count = course_run_summary['count']
+        try:
+            course_run = CourseRun.objects.get(key__iexact=course_run_key)
+            import pprint
+            # logger.info(pprint.pformat(course_run_summaries))
+            # logger.info(pprint.pformat(course_run.course.__dict__))
+            # logger.info('Course run: [{course_run_key}] found in DB.'.format(course_run_key=course_run_key))
+        except CourseRun.DoesNotExist:
+            logger.info('Course run: [{course_run_key}] not found in DB.'.format(course_run_key=course_run_key))
+            return
+
+        course = course_run.course
+        course_uuid = course.uuid
         # update course run count
+        # course_run.count = course_run_count
+        # course_run.save()
+        # logger.info('Updating course run')
         # get course for course run
+
         # add course run total to course total in dictionary
-        logger.info("Course run summary:")
-        logger.info(course_run_summary)
+        if course_uuid in self.course_dictionary:
+            logger.info('incrementing from {old_count} to {new_count}'.format(old_count=self.course_dictionary[course_uuid]['count'],new_count=self.course_dictionary[course_uuid]['count']+course_run_count))
+            self.course_dictionary[course_uuid]['count'] += course_run_count
+        else:
+            logger.info('setting to {count}'.format(count=course_run_count))
+            self.course_dictionary[course_uuid] = {'course':course, 'count':course_run_count}
+
